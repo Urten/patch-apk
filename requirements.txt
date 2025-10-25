@@ -1,4 +1,6 @@
-progress
-termcolor
-objection==1.11.0
-packaging
+packaging==25.0
+-e git+https://github.com/Urten/patch-apk.git@399daf302355dcb8f34e15fbfe418a3899141d23#egg=patch_apk
+progress==1.6.1
+setuptools==80.9.0
+termcolor==3.1.0
+wheel==0.45.1
