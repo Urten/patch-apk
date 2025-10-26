@@ -14,7 +14,7 @@ from patch_apk.core.apk_tool import APKTool
 
 from patch_apk.utils.cli_tools import getArgs, warningPrint, assertSubprocessSuccessfulRun
 from patch_apk.utils.dependencies import checkDependencies 
-from patch_apk.utils.frida_objection import fixAPKBeforeObjection
+from patch_apk.utils.frida_objection import fixAPKBeforeObjection, patchingWithObjection
 from patch_apk.utils.get_target_apk import getTargetAPK
 from patch_apk.utils.get_apk_paths import getAPKPathsForPackage
 from patch_apk.utils.verify_package_name import verifyPackageName
@@ -54,17 +54,8 @@ def main():
         # Before patching with objection, add INTERNET permission if not already present, and set extractNativeLibs to true
         fixAPKBeforeObjection(apkfile, not args.no_enable_user_certs)
         
-        # Patch the target APK with objection
-        print("[+] Patching " + apkfile.split(os.sep)[-1] + " with objection.")
-        warningPrint("[!] The application will be patched with Frida 16.7.19. See https://github.com/sensepost/objection/issues/737 for more information.")
-        if subprocess.run(["objection", "patchapk", "-V", "16.7.19", "--skip-resources", "--ignore-nativelibs", "-s", apkfile], capture_output=True).returncode != 0:
-            print("[+] Objection patching failed, trying alternative approach")
-            warningPrint("[!] If you get an error, the application might not have a launchable activity")
-            
-            # Try without --skip-resources, since objection potentially wasn't able to identify the starting activity
-            # There could have been another reason for the failure, but it's a sensible fallback
-            # Another reason could be a missing INTERNET permission
-            assertSubprocessSuccessfulRun(["objection", "patchapk","-V", "16.7.19",  "--ignore-nativelibs", "-s", apkfile])
+        # Patch the APK with objection
+        patchingWithObjection(apkfile)
     
         os.remove(apkfile)
         shutil.move(apkfile[:-4] + ".objection.apk", apkfile)

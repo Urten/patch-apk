@@ -2,6 +2,7 @@ import os
 import tempfile
 import shutil
 import xml.etree.ElementTree
+import subprocess
 
 # core imports
 
@@ -9,13 +10,14 @@ from patch_apk.core.apk_tool import APKTool
 
 # utility imports
 
-from patch_apk.utils.cli_tools import abort
+from patch_apk.utils.cli_tools import abort, assertSubprocessSuccessfulRun, warningPrint
+from patch_apk.utils.remove_duplicate_class import remove_duplicate_classes
 
 def fixAPKBeforeObjection(apkfile, fix_network_security_config):
     print("[+] Prepping AndroidManifest.xml")
     with tempfile.TemporaryDirectory() as tmppath:
         apkdir = os.path.join(tmppath, "apk")
-        ret = APKTool.runApkTool(["d", apkfile, "-o", apkdir])
+        ret = APKTool.runApkTool(["d", "--only-main-classes", apkfile, "-o", apkdir,])
         if ret["returncode"] != 0:
             abort("Error: Failed to run 'apktool d " + apkfile + " -o " + apkdir + "'.\nRun with --debug-output for more information.")
         
@@ -63,7 +65,12 @@ def fixAPKBeforeObjection(apkfile, fix_network_security_config):
         
         # Save the updated AndroidManifest.xml
         tree.write(manifestPath, encoding="utf-8", xml_declaration=True)
-    
+        # Remove problematic duplicate classes
+        try:
+            remove_duplicate_classes(apkdir)
+        except Exception as e:
+            print(f"[!] Warning: Failed to remove duplicate classes: {e}")
+            pass
         # Rebuild apk file
         result = APKTool.runApkTool(["b", apkdir])
         if result["returncode"] != 0:
@@ -76,3 +83,17 @@ def fixAPKBeforeObjection(apkfile, fix_network_security_config):
             shutil.move(rebuilt_apk, apkfile)
         else:
             abort("Error: Rebuilt APK not found.")
+            
+            
+def patchingWithObjection(apkfile):
+        # Patch the target APK with objection
+    print("[+] Patching " + apkfile.split(os.sep)[-1] + " with objection.")
+    warningPrint("[!] The application will be patched with Frida 16.7.19. See https://github.com/sensepost/objection/issues/737 for more information.")
+    if subprocess.run(["objection", "patchapk", "-V", "16.7.19", "--skip-resources", "--ignore-nativelibs", "-s", apkfile], capture_output=True).returncode != 0:
+        print("[+] Objection patching failed, trying alternative approach")
+        warningPrint("[!] If you get an error, the application might not have a launchable activity")
+        
+        # Try without --skip-resources, since objection potentially wasn't able to identify the starting activity
+        # There could have been another reason for the failure, but it's a sensible fallback
+        # Another reason could be a missing INTERNET permission
+        assertSubprocessSuccessfulRun(["objection", "patchapk","-V", "16.7.19",  "--ignore-nativelibs", "-s", apkfile])

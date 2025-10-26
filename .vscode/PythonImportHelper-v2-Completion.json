@@ -346,6 +346,22 @@
         "documentation": {}
     },
     {
+        "label": "assertSubprocessSuccessfulRun",
+        "importPath": "patch_apk.utils.cli_tools",
+        "description": "patch_apk.utils.cli_tools",
+        "isExtraImport": true,
+        "detail": "patch_apk.utils.cli_tools",
+        "documentation": {}
+    },
+    {
+        "label": "warningPrint",
+        "importPath": "patch_apk.utils.cli_tools",
+        "description": "patch_apk.utils.cli_tools",
+        "isExtraImport": true,
+        "detail": "patch_apk.utils.cli_tools",
+        "documentation": {}
+    },
+    {
         "label": "abort",
         "importPath": "patch_apk.utils.cli_tools",
         "description": "patch_apk.utils.cli_tools",
@@ -856,6 +872,14 @@
         "documentation": {}
     },
     {
+        "label": "patchingWithObjection",
+        "importPath": "patch_apk.utils.frida_objection",
+        "description": "patch_apk.utils.frida_objection",
+        "isExtraImport": true,
+        "detail": "patch_apk.utils.frida_objection",
+        "documentation": {}
+    },
+    {
         "label": "getTargetAPK",
         "importPath": "patch_apk.utils.get_target_apk",
         "description": "patch_apk.utils.get_target_apk",
@@ -901,6 +925,23 @@
         "description": "patch_apk.utils.verify_package_name",
         "isExtraImport": true,
         "detail": "patch_apk.utils.verify_package_name",
+        "documentation": {}
+    },
+    {
+        "label": "patch_apk.utils.remove_duplicate_class",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "patch_apk.utils.remove_duplicate_class",
+        "description": "patch_apk.utils.remove_duplicate_class",
+        "detail": "patch_apk.utils.remove_duplicate_class",
+        "documentation": {}
+    },
+    {
+        "label": "remove_duplicate_classes",
+        "importPath": "patch_apk.utils.remove_duplicate_class",
+        "description": "patch_apk.utils.remove_duplicate_class",
+        "isExtraImport": true,
+        "detail": "patch_apk.utils.remove_duplicate_class",
         "documentation": {}
     },
     {
@@ -1283,7 +1324,16 @@
         "kind": 2,
         "importPath": "src.patch_apk.utils.frida_objection",
         "description": "src.patch_apk.utils.frida_objection",
-        "peekOfCode": "def fixAPKBeforeObjection(apkfile, fix_network_security_config):\n    print(\"[+] Prepping AndroidManifest.xml\")\n    with tempfile.TemporaryDirectory() as tmppath:\n        apkdir = os.path.join(tmppath, \"apk\")\n        ret = APKTool.runApkTool([\"d\", apkfile, \"-o\", apkdir])\n        if ret[\"returncode\"] != 0:\n            abort(\"Error: Failed to run 'apktool d \" + apkfile + \" -o \" + apkdir + \"'.\\nRun with --debug-output for more information.\")\n        # Load AndroidManifest.xml\n        manifestPath = os.path.join(apkdir, \"AndroidManifest.xml\")\n        tree = xml.etree.ElementTree.parse(manifestPath)",
+        "peekOfCode": "def fixAPKBeforeObjection(apkfile, fix_network_security_config):\n    print(\"[+] Prepping AndroidManifest.xml\")\n    with tempfile.TemporaryDirectory() as tmppath:\n        apkdir = os.path.join(tmppath, \"apk\")\n        ret = APKTool.runApkTool([\"d\", \"--only-main-classes\", apkfile, \"-o\", apkdir,])\n        if ret[\"returncode\"] != 0:\n            abort(\"Error: Failed to run 'apktool d \" + apkfile + \" -o \" + apkdir + \"'.\\nRun with --debug-output for more information.\")\n        # Load AndroidManifest.xml\n        manifestPath = os.path.join(apkdir, \"AndroidManifest.xml\")\n        tree = xml.etree.ElementTree.parse(manifestPath)",
+        "detail": "src.patch_apk.utils.frida_objection",
+        "documentation": {}
+    },
+    {
+        "label": "patchingWithObjection",
+        "kind": 2,
+        "importPath": "src.patch_apk.utils.frida_objection",
+        "description": "src.patch_apk.utils.frida_objection",
+        "peekOfCode": "def patchingWithObjection(apkfile):\n        # Patch the target APK with objection\n    print(\"[+] Patching \" + apkfile.split(os.sep)[-1] + \" with objection.\")\n    warningPrint(\"[!] The application will be patched with Frida 16.7.19. See https://github.com/sensepost/objection/issues/737 for more information.\")\n    if subprocess.run([\"objection\", \"patchapk\", \"-V\", \"16.7.19\", \"--skip-resources\", \"--ignore-nativelibs\", \"-s\", apkfile], capture_output=True).returncode != 0:\n        print(\"[+] Objection patching failed, trying alternative approach\")\n        warningPrint(\"[!] If you get an error, the application might not have a launchable activity\")\n        # Try without --skip-resources, since objection potentially wasn't able to identify the starting activity\n        # There could have been another reason for the failure, but it's a sensible fallback\n        # Another reason could be a missing INTERNET permission",
         "detail": "src.patch_apk.utils.frida_objection",
         "documentation": {}
     },
@@ -1312,6 +1362,15 @@
         "description": "src.patch_apk.utils.raw_re_replace",
         "peekOfCode": "def rawREReplace(path, pattern, replacement):\n    if os.path.exists(path):\n        contents = \"\"\n        with open(path, 'r') as file:\n            contents = file.read()\n        newContents = re.sub(pattern, replacement, contents)\n        if (contents != newContents):\n            dbgPrint(\"[~] Patching \" + path)\n            with open(path, 'w') as file:\n                file.write(newContents)",
         "detail": "src.patch_apk.utils.raw_re_replace",
+        "documentation": {}
+    },
+    {
+        "label": "remove_duplicate_classes",
+        "kind": 2,
+        "importPath": "src.patch_apk.utils.remove_duplicate_class",
+        "description": "src.patch_apk.utils.remove_duplicate_class",
+        "peekOfCode": "def remove_duplicate_classes(apkdir):\n    \"\"\"\n    Remove duplicate/conflicting smali classes from smali_assets directory.\n    This prevents 'has already been interned' errors during APK rebuild.\n    \"\"\"\n    smali_assets = os.path.join(apkdir, \"smali_assets\")\n    if not os.path.exists(smali_assets):\n        print(\"[+] No smali_assets directory found, skipping duplicate check\")\n        return\n    print(\"[+] Scanning for conflicting smali classes...\")",
+        "detail": "src.patch_apk.utils.remove_duplicate_class",
         "documentation": {}
     },
     {
