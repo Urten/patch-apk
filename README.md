@@ -72,10 +72,10 @@ The `{package-name}` parameter can be a fully-qualified package name such as `co
 By default the tool will inject the Frida gadget and enable support for user-installed CA certificates by modifying the app's network security config. To disable the network cert modification, pass `--no-enable-user-certs` on the command line.
 
 ### Examples ###
-**Basic usage:** Simply install the target Android app on your device, make sure `adb devices` can see your device, then pass the package name to `patch-apk.py`.
+**Basic usage:** Simply install the target Android app on your device, make sure `adb devices` can see your device, then pass the package name to `patch-apk`.
 
 ```
-$ python3 patch-apk.py com.whatsapp
+$ patch-apk com.whatsapp
 Getting APK path(s) for package: com.whatsapp
 [+] APK path: /data/app/com.whatsapp-NKLgchoExRFTDLkkbDqBGg==/base.apk
 
@@ -93,12 +93,12 @@ Installing the patched APK to the device.
 Done, cleaning up temporary files.
 ```
 
-When `patch-apk.py` is done, the installed app should be patched with objection and have support for user-installed CA certificates enabled. Launch the app on the device and run `objection explore` as you normally would to connect to the agent.
+When `patch-apk` is done, the installed app should be patched with objection and have support for user-installed CA certificates enabled. Launch the app on the device and run `objection explore` as you normally would to connect to the agent.
 
-**Partial Package Name Matching:** Pass a partial package name to `patch-apk.py` and it'll automatically grab the correct package name or ask you to confirm from available options.
+**Partial Package Name Matching:** Pass a partial package name to `patch-apk` and it'll automatically grab the correct package name or ask you to confirm from available options.
 
 ```
-$ python3 patch-apk.py proxy
+$ patch-apk proxy
 
 [!] Multiple matching packages installed, select the package to patch.
 
@@ -123,7 +123,7 @@ package:/data/app/~~TP7sglBuEoDc3yH0wpZdiA==/org.proxydroid-PCy1JxTMVJT3KmxVqaag
 The following shows `patch-apk.py` detecting, rebuilding, and patching a split APK. Some output has been snipped for brevity. The `-v` flag has been set to show additional info.
 
 ```
-$ python3 patch-apk.py org.proxydroid -v
+$ patch-apk org.proxydroid -v
 
 [+] Retrieving APK path(s) for package: org.proxydroid
     [+] APK path: /data/app/~~FTVBmscrJiLerJdXIEa5tw==/org.proxydroid-KMq91nU1y9Qz8ZZAGM--RA==/base.apk
@@ -150,7 +150,7 @@ $ python3 patch-apk.py org.proxydroid -v
     Extracted: /var/folders/t3/vz305z151ng8y2rwvpkx28xw0000gn/T/tmpyw7wl64i/org.proxydroid-split_config.en.apk
     Extracted: /var/folders/t3/vz305z151ng8y2rwvpkx28xw0000gn/T/tmpyw7wl64i/org.proxydroid-split_config.fr.apk
     Extracted: /var/folders/t3/vz305z151ng8y2rwvpkx28xw0000gn/T/tmpyw7wl64i/org.proxydroid-split_config.nl.apk
-    Extracted: /var/folders/t3/vz305z151ng8y2rwvpkx28xw0000gn/T/tmpyw7wl64i/org.proxydroid-split_config.xxhdpi.apk
+    Extracted: /var/folders/t3/vz305z151ng8y2rwvpkx28xw0000gn/T/tmpyw7wl64xk/org.proxydroid-split_config.xxhdpi.apk
 
 [+] Rebuilding as a single APK
     
@@ -191,7 +191,7 @@ package:/data/app/org.proxydroid-9NuZnT-lK3qM_IZQEHhTgA==/base.apk
 By default, patch-apk will inject the frida gadget and modify the network security config. It is also possible to only perform an extraction by providing the `--extract-only` flag. Any split apks will still be merged and a local copy of the APK will be produced:
 
 ```
-$ python3 patch-apk.py org.proxydroid --extract-only
+$ patch-apk org.proxydroid --extract-only
 
 [+] Retrieving APK path(s) for package: org.proxydroid
 
@@ -219,7 +219,7 @@ package:/data/app/~~TP7sglBuEoDc3yH0wpZdiA==/org.proxydroid-PCy1JxTMVJT3KmxVqaag
 package:/data/app/~~TP7sglBuEoDc3yH0wpZdiA==/org.proxydroid-PCy1JxTMVJT3KmxVqaagGQ==/split_config.xxhdpi.apk
 ```
 
-These can be combined into a single APK for use with other tools such as `objection patchapk`. This is done by `patch-apk.py` as follows:
+These can be combined into a single APK for use with other tools such as `objection patchapk`. This is done by `patch-apk` as follows:
 
 **Step 1 - Extract APKs:** First, the individual APK files are pulled from the device and extracted using `apktool`.
 
