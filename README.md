@@ -37,16 +37,39 @@ An APK patcher, for use with [objection](https://github.com/sensepost/objection)
 * **29th March 2020:** Added `--save-apk` parameter to save a copy of the unpatched single APK for use with other tools.
 * **27th March 2020:** Initial release supporting split APKs and the `--no-enable-user-certs` flag.
 
-## Usage ##
-Install the target Android application on your device and connect it to your computer/VM so that `adb devices` can see it, then run:
+## Installation & Usage ##
+
+Installation (development)
+
+Install the project in editable mode (recommended during development):
 
 ```
-python3 patch-apk.py {package-name}
+python -m pip install -e .
 ```
 
-The package-name parameter can be the fully-qualified package name of the Android app, such as `com.google.android.youtube`, or a partial package name, such as `tube`.
+Install for production / normal use:
 
-Along with injecting an instrumentation gadget, the script also automatically enables support for user-installed CA certificates by injecting a network security configuration file into the APK. To disable this functionality, pass the `--no-enable-user-certs` parameter on the command line.
+```
+python -m pip install .
+```
+
+After installation the CLI entry point `patch-apk` will be available. Alternatively you can run directly from the source tree:
+
+```
+python -m patch_apk.main {package-name}
+```
+
+Usage
+
+Ensure your Android device is connected and visible to adb (`adb devices`). Then run:
+
+```
+patch-apk {package-name}
+```
+
+The `{package-name}` parameter can be a fully-qualified package name such as `com.google.android.youtube`, or a partial package name (e.g. `tube`) — the tool will attempt to resolve partial names and ask for confirmation if multiple matches are found.
+
+By default the tool will inject the Frida gadget and enable support for user-installed CA certificates by modifying the app's network security config. To disable the network cert modification, pass `--no-enable-user-certs` on the command line.
 
 ### Examples ###
 **Basic usage:** Simply install the target Android app on your device, make sure `adb devices` can see your device, then pass the package name to `patch-apk.py`.
